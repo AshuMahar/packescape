@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Phone, Star, Facebook, Globe, User, Plane, Menu, X, 
   MapPin, Calendar, CheckCircle, ArrowRight,
-  Instagram, Twitter, Mail, Lock, Edit2, Plus, Trash2
+  Instagram, Twitter, Mail, Lock, Edit2, Plus, Trash2, Save, LogOut, Image
 } from 'lucide-react';
 
 // --- CONSTANTS & DATA ---
@@ -114,8 +114,256 @@ const Navbar = ({ currentPage, setPage, mobileMenuOpen, setMobileMenuOpen, conta
   );
 };
 
+// --- COMPONENT: ADMIN LOGIN MODAL ---
+const AdminLoginModal = ({ onLogin, onClose }) => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (username === 'ashumahar' && password === 'sky6677') {
+      onLogin();
+      setError('');
+    } else {
+      setError('Invalid username or password');
+      setUsername('');
+      setPassword('');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+        <h2 className="text-3xl font-black text-slate-900 mb-2">Admin Login</h2>
+        <p className="text-slate-500 mb-6">Enter your credentials to access the admin panel</p>
+        
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Username</label>
+            <input 
+              type="text" 
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="ashumahar"
+              className="w-full border border-slate-200 rounded-lg p-3 focus:border-[#fdbf46] outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Password</label>
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full border border-slate-200 rounded-lg p-3 focus:border-[#fdbf46] outline-none"
+            />
+          </div>
+          {error && <p className="text-red-500 text-sm font-bold">{error}</p>}
+          
+          <button type="submit" className="w-full bg-[#fdbf46] text-slate-900 font-bold py-3 rounded-lg hover:bg-yellow-400 transition-all">
+            Login
+          </button>
+        </form>
+        
+        <button onClick={onClose} className="w-full mt-4 text-slate-500 hover:text-slate-900 font-bold py-2">
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// --- COMPONENT: ADMIN PANEL ---
+const AdminPanel = ({ trips, setTrips, content, setContent, onLogout }) => {
+  const [editingTrip, setEditingTrip] = useState(null);
+  const [newTrip, setNewTrip] = useState({ title: '', price: '', location: '', days: '', image: '', rating: '4.8' });
+
+  const handleAddTrip = () => {
+    if (newTrip.title && newTrip.price && newTrip.location && newTrip.image) {
+      const trip = { ...newTrip, id: 't' + Date.now() };
+      const updated = [trip, ...trips];
+      setTrips(updated);
+      localStorage.setItem('packescape_trips', JSON.stringify(updated));
+      setNewTrip({ title: '', price: '', location: '', days: '', image: '', rating: '4.8' });
+      alert('Tour added successfully!');
+    }
+  };
+
+  const handleDeleteTrip = (id) => {
+    if (confirm('Delete this tour?')) {
+      const updated = trips.filter(t => t.id !== id);
+      setTrips(updated);
+      localStorage.setItem('packescape_trips', JSON.stringify(updated));
+    }
+  };
+
+  const handleUpdateTrip = (id, field, value) => {
+    const updated = trips.map(t => t.id === id ? { ...t, [field]: value } : t);
+    setTrips(updated);
+    localStorage.setItem('packescape_trips', JSON.stringify(updated));
+  };
+
+  const handleUpdateContent = (field, value) => {
+    const updated = { ...content, [field]: value };
+    setContent(updated);
+    localStorage.setItem('packescape_content', JSON.stringify(updated));
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm overflow-y-auto">
+      <div className="min-h-screen py-8">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-8 flex justify-between items-center">
+              <div>
+                <h2 className="text-4xl font-black mb-2">Admin Dashboard</h2>
+                <p className="text-slate-300">Manage your website content</p>
+              </div>
+              <button onClick={onLogout} className="flex items-center gap-2 bg-red-500 hover:bg-red-600 px-6 py-3 rounded-lg font-bold transition-all">
+                <LogOut className="w-5 h-5"/> Logout
+              </button>
+            </div>
+
+            <div className="p-8 space-y-12">
+              {/* Hero Content Section */}
+              <div className="border-b border-slate-200 pb-12">
+                <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2"><Edit2 className="w-6 h-6"/> Edit Homepage Hero</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Hero Title</label>
+                    <textarea 
+                      value={content.heroTitle} 
+                      onChange={(e) => handleUpdateContent('heroTitle', e.target.value)}
+                      rows={3}
+                      className="w-full border border-slate-200 rounded-lg p-4 focus:border-[#fdbf46] outline-none text-lg font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Hero Subtitle</label>
+                    <textarea 
+                      value={content.heroSubtitle} 
+                      onChange={(e) => handleUpdateContent('heroSubtitle', e.target.value)}
+                      rows={3}
+                      className="w-full border border-slate-200 rounded-lg p-4 focus:border-[#fdbf46] outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Info Section */}
+              <div className="border-b border-slate-200 pb-12">
+                <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2"><Phone className="w-6 h-6"/> Contact Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Phone Number</label>
+                    <input 
+                      type="text" 
+                      value={content.contactPhone} 
+                      onChange={(e) => handleUpdateContent('contactPhone', e.target.value)}
+                      className="w-full border border-slate-200 rounded-lg p-3 focus:border-[#fdbf46] outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+                    <input 
+                      type="email" 
+                      value={content.contactEmail} 
+                      onChange={(e) => handleUpdateContent('contactEmail', e.target.value)}
+                      className="w-full border border-slate-200 rounded-lg p-3 focus:border-[#fdbf46] outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Tours Management Section */}
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2"><Plane className="w-6 h-6"/> Manage Tours</h3>
+
+                {/* Add New Tour */}
+                <div className="bg-green-50 border-2 border-green-200 rounded-xl p-8 mb-12">
+                  <h4 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2"><Plus className="w-5 h-5"/> Add New Tour Package</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Tour Title</label>
+                      <input placeholder="e.g., Himalayan Trek" value={newTrip.title} onChange={(e) => setNewTrip({...newTrip, title: e.target.value})} className="w-full border border-slate-200 rounded-lg p-3 focus:border-[#fdbf46] outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Location</label>
+                      <input placeholder="e.g., Manali" value={newTrip.location} onChange={(e) => setNewTrip({...newTrip, location: e.target.value})} className="w-full border border-slate-200 rounded-lg p-3 focus:border-[#fdbf46] outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Price (₹)</label>
+                      <input type="number" placeholder="e.g., 12000" value={newTrip.price} onChange={(e) => setNewTrip({...newTrip, price: e.target.value})} className="w-full border border-slate-200 rounded-lg p-3 focus:border-[#fdbf46] outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Days</label>
+                      <input type="number" placeholder="e.g., 5" value={newTrip.days} onChange={(e) => setNewTrip({...newTrip, days: e.target.value})} className="w-full border border-slate-200 rounded-lg p-3 focus:border-[#fdbf46] outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Rating</label>
+                      <input type="number" step="0.1" max="5" placeholder="e.g., 4.8" value={newTrip.rating} onChange={(e) => setNewTrip({...newTrip, rating: e.target.value})} className="w-full border border-slate-200 rounded-lg p-3 focus:border-[#fdbf46] outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Image URL</label>
+                      <input placeholder="https://example.com/image.jpg" value={newTrip.image} onChange={(e) => setNewTrip({...newTrip, image: e.target.value})} className="w-full border border-slate-200 rounded-lg p-3 focus:border-[#fdbf46] outline-none col-span-1 md:col-span-2" />
+                    </div>
+                  </div>
+                  <button onClick={handleAddTrip} className="w-full bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 transition-all flex items-center justify-center gap-2"><Plus className="w-5 h-5"/> Add Tour</button>
+                </div>
+
+                {/* Edit Existing Tours */}
+                <div className="space-y-4">
+                  <h4 className="font-bold text-slate-900 text-lg mb-4">Existing Tours ({trips.length})</h4>
+                  {trips.map(trip => (
+                    <div key={trip.id} className="border border-slate-200 rounded-xl p-6 hover:border-[#fdbf46] transition-colors">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Title</label>
+                          <input placeholder="Title" value={trip.title} onChange={(e) => handleUpdateTrip(trip.id, 'title', e.target.value)} className="w-full border border-slate-200 rounded-lg p-2 focus:border-[#fdbf46] outline-none text-sm" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Location</label>
+                          <input placeholder="Location" value={trip.location} onChange={(e) => handleUpdateTrip(trip.id, 'location', e.target.value)} className="w-full border border-slate-200 rounded-lg p-2 focus:border-[#fdbf46] outline-none text-sm" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Price</label>
+                          <input type="number" placeholder="Price" value={trip.price} onChange={(e) => handleUpdateTrip(trip.id, 'price', e.target.value)} className="w-full border border-slate-200 rounded-lg p-2 focus:border-[#fdbf46] outline-none text-sm" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Days</label>
+                          <input type="number" placeholder="Days" value={trip.days} onChange={(e) => handleUpdateTrip(trip.id, 'days', e.target.value)} className="w-full border border-slate-200 rounded-lg p-2 focus:border-[#fdbf46] outline-none text-sm" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Rating</label>
+                          <input type="number" step="0.1" max="5" placeholder="Rating" value={trip.rating} onChange={(e) => handleUpdateTrip(trip.id, 'rating', e.target.value)} className="w-full border border-slate-200 rounded-lg p-2 focus:border-[#fdbf46] outline-none text-sm" />
+                        </div>
+                        <button onClick={() => handleDeleteTrip(trip.id)} className="bg-red-500 text-white font-bold py-2 rounded-lg hover:bg-red-600 transition-all text-sm flex items-center justify-center gap-1"><Trash2 className="w-4 h-4"/> Delete</button>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Image URL</label>
+                        <input placeholder="Image URL" value={trip.image} onChange={(e) => handleUpdateTrip(trip.id, 'image', e.target.value)} className="w-full border border-slate-200 rounded-lg p-2 focus:border-[#fdbf46] outline-none text-sm" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Save Info */}
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
+                <p className="text-blue-900 font-bold flex items-center gap-2"><CheckCircle className="w-5 h-5"/> All changes are saved automatically to your browser!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- COMPONENT: FOOTER ---
-const Footer = ({ setPage, isAdmin, setIsAdmin }) => (
+const Footer = ({ setPage, isAdmin, setIsAdmin, showAdminLogin, setShowAdminLogin }) => (
   <footer className="bg-slate-900 text-slate-300 pt-16 pb-8">
     <div className="container mx-auto px-4 lg:px-8">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
@@ -162,10 +410,10 @@ const Footer = ({ setPage, isAdmin, setIsAdmin }) => (
       <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <p className="text-xs text-slate-500">© 2025 PackEscape. All rights reserved.</p>
         <button 
-          onClick={() => setIsAdmin(!isAdmin)} 
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${isAdmin ? 'bg-[#fdbf46] text-slate-900' : 'bg-white/5 text-slate-500 hover:bg-white/10'}`}
+          onClick={() => !isAdmin ? setShowAdminLogin(true) : setIsAdmin(false)} 
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${isAdmin ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-white/5 text-slate-500 hover:bg-white/10'}`}
         >
-          <Lock className="w-3 h-3" /> {isAdmin ? 'Admin Active' : 'Admin Login'}
+          <Lock className="w-3 h-3" /> {isAdmin ? 'Logout' : 'Admin Login'}
         </button>
       </div>
     </div>
@@ -459,6 +707,7 @@ export default function App() {
   const [currentPage, setPage] = useState(PAGES.HOME);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState('');
 
@@ -510,9 +759,15 @@ export default function App() {
         {renderPage()}
       </main>
 
-      <Footer setPage={setPage} isAdmin={isAdmin} setIsAdmin={setIsAdmin} />
+      <Footer setPage={setPage} isAdmin={isAdmin} setIsAdmin={setIsAdmin} showAdminLogin={showAdminLogin} setShowAdminLogin={setShowAdminLogin} />
 
-      {/* Modals */}
+      {/* Admin Login Modal */}
+      {showAdminLogin && <AdminLoginModal onLogin={() => { setIsAdmin(true); setShowAdminLogin(false); }} onClose={() => setShowAdminLogin(false)} />}
+
+      {/* Admin Panel */}
+      {isAdmin && <AdminPanel trips={trips} setTrips={setTrips} content={content} setContent={setContent} onLogout={() => setIsAdmin(false)} />}
+
+      {/* Request Modal */}
       {showRequestModal && <RequestModal onClose={() => setShowRequestModal(false)} onSubmit={() => { setShowRequestModal(false); alert("Request Sent!"); }} initialTrip={selectedTrip} />}
     </div>
   );
