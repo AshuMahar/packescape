@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Phone, Star, Facebook, Globe, User, Plane, Menu, X, 
   MapPin, Calendar, CheckCircle, ArrowRight,
-  Instagram, Twitter, Mail
+  Instagram, Twitter, Mail, Lock, Edit2, Plus, Trash2
 } from 'lucide-react';
 
 // --- CONSTANTS & DATA ---
@@ -115,7 +115,7 @@ const Navbar = ({ currentPage, setPage, mobileMenuOpen, setMobileMenuOpen, conta
 };
 
 // --- COMPONENT: FOOTER ---
-const Footer = ({ setPage }) => (
+const Footer = ({ setPage, isAdmin, setIsAdmin }) => (
   <footer className="bg-slate-900 text-slate-300 pt-16 pb-8">
     <div className="container mx-auto px-4 lg:px-8">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
@@ -161,6 +161,12 @@ const Footer = ({ setPage }) => (
 
       <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <p className="text-xs text-slate-500">© 2025 PackEscape. All rights reserved.</p>
+        <button 
+          onClick={() => setIsAdmin(!isAdmin)} 
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${isAdmin ? 'bg-[#fdbf46] text-slate-900' : 'bg-white/5 text-slate-500 hover:bg-white/10'}`}
+        >
+          <Lock className="w-3 h-3" /> {isAdmin ? 'Admin Active' : 'Admin Login'}
+        </button>
       </div>
     </div>
   </footer>
@@ -452,30 +458,59 @@ const RequestModal = ({ onClose, onSubmit, initialTrip }) => (
 export default function App() {
   const [currentPage, setPage] = useState(PAGES.HOME);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState('');
+
+  // Load from localStorage or use defaults
+  const [trips, setTrips] = useState(() => {
+    try {
+      const saved = localStorage.getItem('packescape_trips');
+      return saved ? JSON.parse(saved) : TRIPS;
+    } catch {
+      return TRIPS;
+    }
+  });
+
+  const [content, setContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem('packescape_content');
+      return saved ? JSON.parse(saved) : CONTENT;
+    } catch {
+      return CONTENT;
+    }
+  });
+
+  // Save to localStorage when trips or content change
+  useEffect(() => {
+    localStorage.setItem('packescape_trips', JSON.stringify(trips));
+  }, [trips]);
+
+  useEffect(() => {
+    localStorage.setItem('packescape_content', JSON.stringify(content));
+  }, [content]);
 
   const openRequest = (t='') => { setSelectedTrip(t); setShowRequestModal(true); };
 
   // Router Logic
   const renderPage = () => {
       switch(currentPage) {
-          case PAGES.TOURS: return <ToursPage trips={TRIPS} onRequest={openRequest} />;
+          case PAGES.TOURS: return <ToursPage trips={trips} onRequest={openRequest} />;
           case PAGES.ABOUT: return <AboutPage />;
-          case PAGES.CONTACT: return <ContactPage content={CONTENT} />;
-          default: return <HomePage trips={TRIPS} onRequest={openRequest} setPage={setPage} />;
+          case PAGES.CONTACT: return <ContactPage content={content} />;
+          default: return <HomePage trips={trips} onRequest={openRequest} setPage={setPage} />;
       }
   };
 
   return (
     <div className="font-sans text-slate-900 bg-white selection:bg-[#fdbf46] selection:text-slate-900">
-      <Navbar currentPage={currentPage} setPage={setPage} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} contactPhone={CONTENT.contactPhone} />
+      <Navbar currentPage={currentPage} setPage={setPage} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} contactPhone={content.contactPhone} />
 
       <main className="min-h-screen">
         {renderPage()}
       </main>
 
-      <Footer setPage={setPage} />
+      <Footer setPage={setPage} isAdmin={isAdmin} setIsAdmin={setIsAdmin} />
 
       {/* Modals */}
       {showRequestModal && <RequestModal onClose={() => setShowRequestModal(false)} onSubmit={() => { setShowRequestModal(false); alert("Request Sent!"); }} initialTrip={selectedTrip} />}
