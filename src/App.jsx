@@ -1,10 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Phone, Star, Facebook, Globe, User, Plane, Menu, X, 
   MapPin, Calendar, CheckCircle, ArrowRight,
   Instagram, Twitter, Mail, Lock, Edit2, Plus, Trash2, Save, LogOut, Image
 } from 'lucide-react';
+import emailjs from 'emailjs-com';
+
+// Initialize EmailJS
+const emailjsPublicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+if (emailjsPublicKey) {
+  emailjs.init(emailjsPublicKey);
+}
 
 // --- CONSTANTS & DATA ---
 const PAGES = {
@@ -26,8 +32,13 @@ const TRIPS = [
 const CONTENT = {
   heroTitle: "Discover the Unseen World",
   heroSubtitle: "Curated journeys for the modern wanderer.",
+  heroImage: "https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?q=80&w=2070&auto=format&fit=crop",
   contactPhone: "+91-9876543210",
-  contactEmail: "explore@packescape.com"
+  contactEmail: "explore@packescape.com",
+  footerDescription: "We curate experiences, not just trips. Join India's fastest-growing community of travelers and explorers.",
+  footerPhone: "+91-9876543210",
+  footerEmail: "explore@packescape.com",
+  enquiries: []
 };
 
 // --- COMPONENT: LOGO ---
@@ -249,6 +260,17 @@ const AdminPanel = ({ trips, setTrips, content, setContent, onLogout }) => {
                       className="w-full border border-slate-200 rounded-lg p-4 focus:border-[#fdbf46] outline-none"
                     />
                   </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Hero Background Image URL</label>
+                    <input 
+                      type="text" 
+                      value={content.heroImage} 
+                      onChange={(e) => handleUpdateContent('heroImage', e.target.value)}
+                      placeholder="https://example.com/image.jpg"
+                      className="w-full border border-slate-200 rounded-lg p-3 focus:border-[#fdbf46] outline-none"
+                    />
+                    <p className="text-xs text-slate-500 mt-2">Sample URLs: https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1400 (Mountains)</p>
+                  </div>
                 </div>
               </div>
 
@@ -271,6 +293,41 @@ const AdminPanel = ({ trips, setTrips, content, setContent, onLogout }) => {
                       type="email" 
                       value={content.contactEmail} 
                       onChange={(e) => handleUpdateContent('contactEmail', e.target.value)}
+                      className="w-full border border-slate-200 rounded-lg p-3 focus:border-[#fdbf46] outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Editing Section */}
+              <div className="border-b border-slate-200 pb-12">
+                <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2"><Edit2 className="w-6 h-6"/> Edit Footer</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Footer Description</label>
+                    <textarea 
+                      value={content.footerDescription} 
+                      onChange={(e) => handleUpdateContent('footerDescription', e.target.value)}
+                      rows={3}
+                      className="w-full border border-slate-200 rounded-lg p-3 focus:border-[#fdbf46] outline-none"
+                      placeholder="Enter footer description..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Footer Phone</label>
+                    <input 
+                      type="text" 
+                      value={content.footerPhone} 
+                      onChange={(e) => handleUpdateContent('footerPhone', e.target.value)}
+                      className="w-full border border-slate-200 rounded-lg p-3 focus:border-[#fdbf46] outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Footer Email</label>
+                    <input 
+                      type="email" 
+                      value={content.footerEmail} 
+                      onChange={(e) => handleUpdateContent('footerEmail', e.target.value)}
                       className="w-full border border-slate-200 rounded-lg p-3 focus:border-[#fdbf46] outline-none"
                     />
                   </div>
@@ -350,6 +407,47 @@ const AdminPanel = ({ trips, setTrips, content, setContent, onLogout }) => {
                 </div>
               </div>
 
+              {/* Enquiries Section */}
+              <div className="border-b border-slate-200 pb-12">
+                <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2"><Mail className="w-6 h-6"/> Customer Enquiries ({content.enquiries?.length || 0})</h3>
+                {content.enquiries && content.enquiries.length > 0 ? (
+                  <div className="space-y-4">
+                    {content.enquiries.map((enquiry, idx) => (
+                      <div key={idx} className="border border-slate-200 rounded-xl p-6 bg-gradient-to-r from-slate-50 to-white hover:border-[#fdbf46] transition-colors">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <p className="text-xs text-slate-500 font-bold uppercase">Name</p>
+                            <p className="text-lg font-bold text-slate-900">{enquiry.name}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 font-bold uppercase">Email</p>
+                            <p className="text-sm text-slate-700"><a href={`mailto:${enquiry.email}`} className="text-[#fdbf46] hover:underline">{enquiry.email}</a></p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 font-bold uppercase">Phone</p>
+                            <p className="text-sm text-slate-700"><a href={`tel:${enquiry.phone}`} className="text-[#fdbf46] hover:underline">{enquiry.phone}</a></p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 font-bold uppercase">Destination</p>
+                            <p className="text-sm font-semibold text-slate-900">{enquiry.destination}</p>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-500 font-bold uppercase mb-2">Message</p>
+                          <p className="text-sm text-slate-700 bg-white p-3 rounded-lg border border-slate-100">{enquiry.message}</p>
+                        </div>
+                        <p className="text-xs text-slate-400 mt-4">Received: {new Date(enquiry.timestamp).toLocaleString()}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-8 text-center">
+                    <Mail className="w-12 h-12 text-slate-300 mx-auto mb-3"/>
+                    <p className="text-slate-500 font-semibold">No enquiries yet. Check back later!</p>
+                  </div>
+                )}
+              </div>
+
               {/* Save Info */}
               <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
                 <p className="text-blue-900 font-bold flex items-center gap-2"><CheckCircle className="w-5 h-5"/> All changes are saved automatically to your browser!</p>
@@ -363,14 +461,14 @@ const AdminPanel = ({ trips, setTrips, content, setContent, onLogout }) => {
 };
 
 // --- COMPONENT: FOOTER ---
-const Footer = ({ setPage, isAdmin, setIsAdmin, showAdminLogin, setShowAdminLogin }) => (
+const Footer = ({ setPage, isAdmin, setIsAdmin, showAdminLogin, setShowAdminLogin, content }) => (
   <footer className="bg-slate-900 text-slate-300 pt-16 pb-8">
     <div className="container mx-auto px-4 lg:px-8">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
         <div className="col-span-1 md:col-span-1">
           <Logo dark={true} />
           <p className="mt-6 text-sm text-slate-400 leading-relaxed">
-            We curate experiences, not just trips. Join India's fastest-growing community of travelers and explorers.
+            {content?.footerDescription || "We curate experiences, not just trips. Join India's fastest-growing community of travelers and explorers."}
           </p>
           <div className="flex gap-4 mt-6">
             <div className="w-10 h-10 rounded-full bg-white/5 hover:bg-[#fdbf46] hover:text-slate-900 flex items-center justify-center transition-all cursor-pointer"><Instagram className="w-5 h-5" /></div>
@@ -398,12 +496,11 @@ const Footer = ({ setPage, isAdmin, setIsAdmin, showAdminLogin, setShowAdminLogi
         </div>
 
         <div>
-            <h4 className="text-white font-bold mb-6">Newsletter</h4>
-            <p className="text-xs text-slate-400 mb-4">Get the latest deals and travel tips.</p>
-            <div className="flex gap-2">
-                <input type="email" placeholder="Email Address" className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm w-full focus:outline-none focus:border-[#fdbf46]" />
-                <button className="bg-[#fdbf46] text-slate-900 px-4 py-2 rounded-lg font-bold hover:bg-yellow-400"><ArrowRight className="w-5 h-5" /></button>
-            </div>
+            <h4 className="text-white font-bold mb-6">Contact & Support</h4>
+            <ul className="space-y-3 text-sm">
+              <li className="flex items-center gap-2"><Phone className="w-4 h-4 text-[#fdbf46]"/><a href={`tel:${content?.footerPhone}`} className="hover:text-[#fdbf46] transition-colors">{content?.footerPhone}</a></li>
+              <li className="flex items-center gap-2"><Mail className="w-4 h-4 text-[#fdbf46]"/><a href={`mailto:${content?.footerEmail}`} className="hover:text-[#fdbf46] transition-colors">{content?.footerEmail}</a></li>
+            </ul>
         </div>
       </div>
 
@@ -459,13 +556,13 @@ const TripCard = ({ trip, onRequest }) => (
 );
 
 // --- COMPONENT: PAGE - HOME ---
-const HomePage = ({ trips, onRequest, setPage }) => (
+const HomePage = ({ trips, onRequest, setPage, content }) => (
   <div className="animate-in fade-in duration-500">
     {/* Hero */}
     <section className="relative h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-slate-900">
         <img 
-          src="https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?q=80&w=2070&auto=format&fit=crop" 
+          src={content.heroImage} 
           className="w-full h-full object-cover opacity-60" 
           alt="Hero"
         />
@@ -678,8 +775,19 @@ const ContactPage = ({ content }) => (
     </div>
 );
 
-// --- COMPONENT: MODALS ---
-const RequestModal = ({ onClose, onSubmit, initialTrip }) => (
+// --- COMPONENT: REQUEST MODAL ---
+const RequestModal = ({ onClose, onSubmit, initialTrip, onEnquiry }) => {
+  const [formData, setFormData] = useState({ name: '', phone: '', email: '', destination: initialTrip, message: '' });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (formData.name && formData.phone && formData.email) {
+      onEnquiry(formData);
+      onSubmit();
+    }
+  };
+
+  return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 relative">
              <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 z-10"><X className="w-6 h-6"/></button>
@@ -689,18 +797,21 @@ const RequestModal = ({ onClose, onSubmit, initialTrip }) => (
                  <p className="text-slate-900/80 font-medium relative z-10">We'll help you plan the perfect trip.</p>
              </div>
              <div className="p-8 -mt-8 bg-white rounded-t-3xl relative">
-                 <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }} className="space-y-4">
-                     <input type="text" placeholder="Your Name" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium focus:border-[#fdbf46] outline-none" required />
-                     <input type="tel" placeholder="Phone Number" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium focus:border-[#fdbf46] outline-none" required />
-                     <input type="text" defaultValue={initialTrip} placeholder="Destination" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium focus:border-[#fdbf46] outline-none" />
-                     <button className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
-                         Request Call Back <Phone className="w-4 h-4" />
+                 <form onSubmit={handleSubmit} className="space-y-4">
+                     <input type="text" placeholder="Your Name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium focus:border-[#fdbf46] outline-none" required />
+                     <input type="email" placeholder="Email Address" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium focus:border-[#fdbf46] outline-none" required />
+                     <input type="tel" placeholder="Phone Number" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium focus:border-[#fdbf46] outline-none" required />
+                     <input type="text" value={formData.destination} onChange={(e) => setFormData({...formData, destination: e.target.value})} placeholder="Destination" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium focus:border-[#fdbf46] outline-none" />
+                     <textarea placeholder="Message (optional)" value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} rows={3} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-medium focus:border-[#fdbf46] outline-none" />
+                     <button type="submit" className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+                         Submit Enquiry <Phone className="w-4 h-4" />
                      </button>
                  </form>
              </div>
         </div>
     </div>
-);
+  );
+};
 
 // --- MAIN APP COMPONENT ---
 export default function App() {
@@ -741,6 +852,40 @@ export default function App() {
 
   const openRequest = (t='') => { setSelectedTrip(t); setShowRequestModal(true); };
 
+  const handleEnquiry = (enquiryData) => {
+    const newEnquiry = {
+      ...enquiryData,
+      timestamp: new Date().toISOString()
+    };
+    const updated = { ...content, enquiries: [...(content.enquiries || []), newEnquiry] };
+    setContent(updated);
+    localStorage.setItem('packescape_content', JSON.stringify(updated));
+    
+    // Send email to admin if EmailJS is configured
+    if (emailjsPublicKey) {
+      const templateParams = {
+        to_email: import.meta.env.VITE_ADMIN_EMAIL || 'packescapeindia@gmail.com',
+        from_name: enquiryData.name,
+        from_email: enquiryData.email,
+        phone: enquiryData.phone,
+        destination: enquiryData.destination,
+        message: enquiryData.message
+      };
+
+      emailjs.send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_packescape', 
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_packescape', 
+        templateParams
+      )
+        .then((response) => {
+          console.log('Email sent successfully:', response);
+        })
+        .catch((error) => {
+          console.log('Email sending failed, but enquiry saved:', error);
+        });
+    }
+  };
+
   // Router Logic
   const renderPage = () => {
       switch(currentPage) {
@@ -759,7 +904,7 @@ export default function App() {
         {renderPage()}
       </main>
 
-      <Footer setPage={setPage} isAdmin={isAdmin} setIsAdmin={setIsAdmin} showAdminLogin={showAdminLogin} setShowAdminLogin={setShowAdminLogin} />
+      <Footer setPage={setPage} isAdmin={isAdmin} setIsAdmin={setIsAdmin} showAdminLogin={showAdminLogin} setShowAdminLogin={setShowAdminLogin} content={content} />
 
       {/* Admin Login Modal */}
       {showAdminLogin && <AdminLoginModal onLogin={() => { setIsAdmin(true); setShowAdminLogin(false); }} onClose={() => setShowAdminLogin(false)} />}
@@ -768,7 +913,7 @@ export default function App() {
       {isAdmin && <AdminPanel trips={trips} setTrips={setTrips} content={content} setContent={setContent} onLogout={() => setIsAdmin(false)} />}
 
       {/* Request Modal */}
-      {showRequestModal && <RequestModal onClose={() => setShowRequestModal(false)} onSubmit={() => { setShowRequestModal(false); alert("Request Sent!"); }} initialTrip={selectedTrip} />}
+      {showRequestModal && <RequestModal onClose={() => setShowRequestModal(false)} onSubmit={() => { setShowRequestModal(false); alert("Request Sent! We will contact you soon."); }} initialTrip={selectedTrip} onEnquiry={handleEnquiry} />}
     </div>
   );
 }
