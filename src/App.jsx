@@ -6,10 +6,14 @@ import {
 } from 'lucide-react';
 import emailjs from 'emailjs-com';
 
-// Initialize EmailJS
-const emailjsPublicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-if (emailjsPublicKey) {
-  emailjs.init(emailjsPublicKey);
+// Initialize EmailJS only if public key exists
+try {
+  const emailjsPublicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+  if (emailjsPublicKey && emailjsPublicKey !== 'YOUR_EMAILJS_PUBLIC_KEY_HERE') {
+    emailjs.init(emailjsPublicKey);
+  }
+} catch (error) {
+  console.log('EmailJS not configured - enquiry emails will not be sent');
 }
 
 // --- CONSTANTS & DATA ---
@@ -574,10 +578,10 @@ const HomePage = ({ trips, onRequest, setPage, content }) => (
             <Globe className="w-3 h-3" /> Explore the World
         </div>
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white mb-6 leading-[0.9] tracking-tight">
-          {CONTENT.heroTitle}
+          {content.heroTitle}
         </h1>
         <div className="text-lg md:text-2xl text-slate-300 mb-10 font-light max-w-2xl mx-auto leading-relaxed">
-          {CONTENT.heroSubtitle}
+          {content.heroSubtitle}
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button onClick={() => setPage(PAGES.TOURS)} className="px-8 py-4 bg-[#fdbf46] text-slate-900 font-bold rounded-full hover:bg-yellow-400 hover:scale-105 transition-all shadow-lg shadow-yellow-500/20 w-full sm:w-auto">
@@ -862,27 +866,32 @@ export default function App() {
     localStorage.setItem('packescape_content', JSON.stringify(updated));
     
     // Send email to admin if EmailJS is configured
-    if (emailjsPublicKey) {
-      const templateParams = {
-        to_email: import.meta.env.VITE_ADMIN_EMAIL || 'packescapeindia@gmail.com',
-        from_name: enquiryData.name,
-        from_email: enquiryData.email,
-        phone: enquiryData.phone,
-        destination: enquiryData.destination,
-        message: enquiryData.message
-      };
+    try {
+      const emailjsPublicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+      if (emailjsPublicKey && emailjsPublicKey !== 'YOUR_EMAILJS_PUBLIC_KEY_HERE') {
+        const templateParams = {
+          to_email: import.meta.env.VITE_ADMIN_EMAIL || 'packescapeindia@gmail.com',
+          from_name: enquiryData.name,
+          from_email: enquiryData.email,
+          phone: enquiryData.phone,
+          destination: enquiryData.destination,
+          message: enquiryData.message
+        };
 
-      emailjs.send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_packescape', 
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_packescape', 
-        templateParams
-      )
-        .then((response) => {
-          console.log('Email sent successfully:', response);
-        })
-        .catch((error) => {
-          console.log('Email sending failed, but enquiry saved:', error);
-        });
+        emailjs.send(
+          import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_packescape', 
+          import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_packescape', 
+          templateParams
+        )
+          .then((response) => {
+            console.log('Email sent successfully:', response);
+          })
+          .catch((error) => {
+            console.log('Email sending failed, but enquiry saved:', error);
+          });
+      }
+    } catch (error) {
+      console.log('EmailJS error:', error);
     }
   };
 
@@ -892,7 +901,7 @@ export default function App() {
           case PAGES.TOURS: return <ToursPage trips={trips} onRequest={openRequest} />;
           case PAGES.ABOUT: return <AboutPage />;
           case PAGES.CONTACT: return <ContactPage content={content} />;
-          default: return <HomePage trips={trips} onRequest={openRequest} setPage={setPage} />;
+          default: return <HomePage trips={trips} onRequest={openRequest} setPage={setPage} content={content} />;
       }
   };
 
