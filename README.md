@@ -4,11 +4,26 @@ A beautiful, fast travel booking website built with **React + Vite + Tailwind CS
 
 ## Features
 
-✨ **Fully Static** - No backend needed!
+✨ **Fully Editable Admin Panel** - Change everything without code!
+📧 **Email Notifications** - Customer enquiries sent to packescapeindia@gmail.com
+✅ **No Backend Required** - All data stored in browser
 🌍 **Responsive Design** - Perfect on mobile & desktop  
 ⚡ **Super Fast** - Built with Vite (lightning-quick builds)
 🎨 **Modern UI** - Beautiful animations & design
 📱 **Mobile-First** - Works great everywhere
+
+## Admin Panel Access
+
+**Login with:**
+- Username: `ashumahar`
+- Password: `sky6677`
+
+**Features:**
+- ✏️ Edit homepage title, subtitle, background image
+- ✏️ Edit footer content and contact details
+- ✏️ Add/edit/delete tour packages
+- 📧 View all customer enquiries
+- 🎨 Change colors, images, text in real-time
 
 ## Quick Start
 
@@ -29,6 +44,24 @@ A beautiful, fast travel booking website built with **React + Vite + Tailwind CS
    ```
 
 ## Deploy to Netlify
+
+### 🔧 IMPORTANT: Setup Email Notifications First!
+
+Before deploying, configure EmailJS for enquiry notifications:
+
+1. Go to [emailjs.com](https://www.emailjs.com) → Sign up (free)
+2. Add Gmail service → Connect packescapeindia@gmail.com
+3. Create template named `template_packescape`
+4. Get your **Public Key** from Account → API Keys
+5. Edit `.env` file and add:
+   ```
+   VITE_EMAILJS_PUBLIC_KEY=your_public_key_here
+   VITE_EMAILJS_SERVICE_ID=service_packescape
+   VITE_EMAILJS_TEMPLATE_ID=template_packescape
+   VITE_ADMIN_EMAIL=packescapeindia@gmail.com
+   ```
+
+See `EMAIL_SETUP.md` for detailed instructions.
 
 ### Option 1: GitHub + Netlify (Recommended)
 
